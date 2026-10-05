@@ -1,0 +1,295 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend: artisan serve",
+      "detail": "php artisan serve --host=0.0.0.0 --port=8000. Отдаёт и API (/api/*), и собранную Vue-SPA, и Swagger UI (/api/documentation). --host обязателен: контейнер обращается к серверу снаружи.",
+      "type": "shell",
+      "command": "php artisan serve --host=0.0.0.0 --port=8000",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-back"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "artisan-serve",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/projfair-back"
+        ],
+        "pattern": [],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting Laravel development server:",
+          "endsPattern": "Development Server .* started"
+        }
+      }
+    },
+    {
+      "label": "backend: artisan serve (xdebug)",
+      "detail": "Тот же сервер с xdebug.mode=debug. Порт отладчика 9003 (xdebug.client_port из php.ini).",
+      "type": "shell",
+      "command": "php -d xdebug.mode=debug artisan serve --host=0.0.0.0 --port=8000",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-back"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "artisan-serve-xdebug",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/projfair-back"
+        ],
+        "pattern": [],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting Laravel development server:",
+          "endsPattern": "Development Server .* started"
+        }
+      }
+    },
+    {
+      "label": "backend: перегенерировать openapi.yaml",
+      "detail": "composer doc — ./vendor/bin/openapi app -o openapi.yaml",
+      "type": "shell",
+      "command": "composer doc",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-back"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "client: vite",
+      "detail": "npm run dev — dev-сервер Vite на http://localhost:3000. Если порт занят, Vite молча переключится на 3001.",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-client"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "vite",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/projfair-client"
+        ],
+        "pattern": [
+          {
+            "regexp": "^([^/].*):(\\d+):(\\d+) (\\[.*\\])? (.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 4
+          },
+          {
+            "regexp": "^([^/].*)$",
+            "file": 1
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE v.*ready in.*",
+          "endsPattern": "Local:.*http://localhost:\\d+/.*"
+        }
+      }
+    },
+    {
+      "label": "client: vite (mock)",
+      "detail": "npm run dev:mock — фронтенд на мок-данных, без обращения к API",
+      "type": "shell",
+      "command": "npm run dev:mock",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-client"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "vite-mock",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/projfair-client"
+        ],
+        "pattern": [
+          {
+            "regexp": "^([^/].*):(\\d+):(\\d+) (\\[.*\\])? (.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 4
+          },
+          {
+            "regexp": "^([^/].*)$",
+            "file": 1
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE v.*ready in.*",
+          "endsPattern": "Local:.*http://localhost:\\d+/.*"
+        }
+      }
+    },
+    {
+      "label": "client: storybook",
+      "detail": "storybook dev -p 6006 --no-open",
+      "type": "shell",
+      "command": "npm run storybook",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-client"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "storybook",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/projfair-client"
+        ],
+        "pattern": [],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*(Storybook|started|Building stories).*",
+          "endsPattern": ".*(Local|On your network):.*"
+        }
+      }
+    },
+    {
+      "label": "client: lint",
+      "detail": "prettier + stylelint + eslint + type-check",
+      "type": "shell",
+      "command": "npm run lint",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-client"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "client: сборка",
+      "detail": "Прод-сборка Vue (в проде её отдаёт Laravel через public/assets)",
+      "type": "shell",
+      "command": "npm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-client"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "db: статус",
+      "detail": "Проверка соединения с MySQL 8.0 (хост берётся из DB_HOST, иначе db)",
+      "type": "shell",
+      "command": "php -r 'try { new PDO(\"mysql:host=\" . (getenv(\"DB_HOST\") ?: \"db\"), \"root\", \"root\"); echo \"MySQL доступен\" . PHP_EOL; } catch (Throwable $e) { fwrite(STDERR, \"MySQL недоступен: \" . $e->getMessage() . PHP_EOL); exit(1); }'",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "db: консоль mysql",
+      "detail": "Интерактивный клиент к базе projectfair (root / root)",
+      "type": "shell",
+      "command": "mysql -h db -P 3306 -u root -proot projectfair",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "db: переимпорт дампа",
+      "detail": "PROJFAIR_REIMPORT=1 bash .devcontainer/setup.sh — вернёт БД к состоянию projectfair.sql. БД пересоздаётся целиком, ручные изменения пропадут.",
+      "type": "shell",
+      "command": "PROJFAIR_REIMPORT=1 bash .devcontainer/setup.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "db: php artisan migrate",
+      "detail": "Применит только миграции, добавленные после выгрузки дампа",
+      "type": "shell",
+      "command": "php artisan migrate --force --ansi",
+      "options": {
+        "cwd": "${workspaceFolder}/projfair-back"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "mailhog: статус",
+      "detail": "SMTP mailhog:1025, веб-интерфейс http://localhost:8025",
+      "type": "shell",
+      "command": "curl -sS -o /dev/null -w 'MailHog UI (http://mailhog:8025): HTTP %{http_code}\\n' http://mailhog:8025/ && echo 'SMTP: mailhog:1025'",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "setup: первичная настройка",
+      "detail": "bash .devcontainer/setup.sh — .env, composer install, APP_KEY, импорт дампа, миграции, npm install. Идемпотентно.",
+      "type": "shell",
+      "command": "bash .devcontainer/setup.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    }
+  ]
+}

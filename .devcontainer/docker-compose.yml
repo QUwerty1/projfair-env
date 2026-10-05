@@ -1,0 +1,72 @@
+# Dev-окружение projfair.
+#   app      — PHP 8.1 + Composer + Node (собирается из .devcontainer/Dockerfile)
+#   db       — MySQL 8.0 (те же параметры, что в projfair-back/docker-compose.dev.yml)
+#   mailhog  — перехват писем, на которые уже ссылается projfair-back/.env.example
+#
+# Запуск вне VS Code:
+#   docker compose -p projfair -f .devcontainer/docker-compose.yml up -d
+#   docker compose -p projfair -f .devcontainer/docker-compose.yml exec app bash
+
+name: projfair
+
+services:
+  app:
+    image: projfair-dev:latest
+    volumes:
+      - ..:/workspaces/projfair:cached
+      # Кэши пакетов вне репозитория, чтобы не инвалидировать vendor/node_modules
+      - composer-cache:/home/vscode/.cache/composer
+      - npm-cache:/home/vscode/.npm
+    environment:
+      # Хосты сервисов по именам контейнеров
+      DB_HOST: db
+      MAIL_HOST: mailhog
+      # Laravel использует эти переменные на этапе postCreate (см. setup.sh)
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_DEVELOPMENT: "true"
+      APP_URL: http://localhost:8000
+      CLIENT_URL: http://localhost:3000
+    ports:
+      - "8000:8000"   # php artisan serve
+      - "3000:3000"   # vite dev-сервер
+      - "9003:9003"   # xdebug
+    depends_on:
+      db:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    # Devcontainer сам управляет стартовой командой через overrideCommand
+    command: sleep infinity
+
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: projectfair
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: projectfair
+      MYSQL_PASSWORD: projectfair
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+
+volumes:
+  db-data:
+  composer-cache:
+  npm-cache:
