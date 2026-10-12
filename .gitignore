@@ -1,0 +1,11 @@
+*
+
+!.gitignore
+
+!.devcontainer
+!.vscode
+
+!/.devcontainer/**
+!/.vscode/**
+
+.devcontainer/tmp
