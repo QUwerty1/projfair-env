@@ -1,7 +1,7 @@
 # Dev-окружение projfair.
 #   app      — PHP 8.1 + Composer + Node (собирается из .devcontainer/Dockerfile)
-#   db       — MySQL 8.0 (те же параметры, что в projfair-back/docker-compose.dev.yml)
-#   mailhog  — перехват писем, на которые уже ссылается projfair-back/.env.example
+#   db       — MySQL 8.0; при первом создании тома db-data импортирует projectfair.sql
+#   mailpit  — перехват писем (SMTP :1025, веб-интерфейс :8025)
 #
 # Запуск вне VS Code:
 #   docker compose -p projfair -f .devcontainer/docker-compose.yml up -d
@@ -11,32 +11,24 @@ name: projfair
 
 services:
   app:
+    build: .
     image: projfair-dev:latest
     volumes:
       - ..:/workspaces/projfair:cached
       # Кэши пакетов вне репозитория, чтобы не инвалидировать vendor/node_modules
-      - composer-cache:/home/vscode/.cache/composer
+      - composer-cache:/home/vscode/.composer/cache
       - npm-cache:/home/vscode/.npm
-    environment:
-      # Хосты сервисов по именам контейнеров
-      DB_HOST: db
-      MAIL_HOST: mailhog
-      # Laravel использует эти переменные на этапе postCreate (см. setup.sh)
-      APP_ENV: local
-      APP_DEBUG: "true"
-      APP_DEVELOPMENT: "true"
-      APP_URL: http://localhost:8000
-      CLIENT_URL: http://localhost:3000
+      # zz- в имени — чтобы подключаться после xdebug.ini базового образа (см. php.ini)
+      - ./php.ini:/usr/local/etc/php/conf.d/zz-projfair.ini:ro
     ports:
       - "8000:8000"   # php artisan serve
       - "3000:3000"   # vite dev-сервер
-      - "9003:9003"   # xdebug
     depends_on:
       db:
         condition: service_healthy
-      mailhog:
+      mailpit:
         condition: service_started
-    # Devcontainer сам управляет стартовой командой через overrideCommand
+    # Держит контейнер запущенным; сервисы стартуют вручную или задачами VS Code
     command: sleep infinity
 
   db:
@@ -45,13 +37,17 @@ services:
     environment:
       MYSQL_DATABASE: projectfair
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: projectfair
-      MYSQL_PASSWORD: projectfair
     ports:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      # Импортируется один раз, когда том db-data пуст.
+      # Вернуть БД к дампу: задача "db: переимпорт дампа" или
+      # `docker compose -p projfair -f .devcontainer/docker-compose.yml down -v`
+      - ./projectfair.sql:/docker-entrypoint-initdb.d/projectfair.sql:ro
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-log-bin
+    # Пока идёт импорт дампа, MySQL слушает только сокет, поэтому ping по TCP
+    # проходит лишь после импорта — app стартует уже с заполненной базой.
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
       interval: 5s
@@ -59,8 +55,8 @@ services:
       retries: 20
       start_period: 30s
 
-  mailhog:
-    image: mailhog/mailhog:latest
+  mailpit:
+    image: axllent/mailpit:v1.29
     restart: unless-stopped
     ports:
       - "1025:1025"   # SMTP

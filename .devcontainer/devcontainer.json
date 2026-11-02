@@ -4,32 +4,21 @@
   "service": "app",
   "workspaceFolder": "/workspaces/projfair",
 
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
-    }
-  },
-
-  "forwardPorts": [8000, 3000, 3306, 8025],
   "portsAttributes": {
     "8000": { "label": "Laravel API (artisan serve)", "onAutoForward": "notify" },
     "3000": { "label": "Vue client (vite)", "onAutoForward": "notify" },
     "3306": { "label": "MySQL 8.0", "onAutoForward": "silent" },
-    "8025": { "label": "MailHog UI", "onAutoForward": "notify" }
+    "8025": { "label": "Mailpit UI", "onAutoForward": "notify" }
   },
 
   "postCreateCommand": "bash .devcontainer/setup.sh",
-
-  "remoteEnv": {
-    "PATH": "${containerEnv:PATH}:/home/vscode/.composer/vendor/bin",
-    "COMPOSER_ALLOW_SUPERUSER": "1"
-  },
 
   "customizations": {
     "vscode": {
       "extensions": [
         "bmewburn.vscode-intelephense-client",
         "recca0120.vscode-phpunit",
+        "xdebug.php-debug",
         "amiralizadeh9480.laravel-extra-intellisense",
         "shufo.vscode-blade-formatter",
         "EditorConfig.EditorConfig",
@@ -47,8 +36,6 @@
         "[php]": {
           "editor.defaultFormatter": "bmewburn.vscode-intelephense-client"
         },
-        "intelephense.licenses": [],
-        "editor.formatOnSave": false,
         "intelephense.environment.phpVersion": "8.1.0"
       }
     }

@@ -1,0 +1,5 @@
+# Файлы исполняются внутри Linux-контейнера: на Windows (core.autocrlf=true)
+# CRLF ломает bash-скрипты ($'\r': command not found), поэтому всегда LF.
+* text=auto eol=lf
+
+*.sql -diff

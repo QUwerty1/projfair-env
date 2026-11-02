@@ -31,7 +31,7 @@
     },
     {
       "label": "backend: artisan serve (xdebug)",
-      "detail": "Тот же сервер с xdebug.mode=debug. Порт отладчика 9003 (xdebug.client_port из php.ini).",
+      "detail": "Тот же сервер с xdebug.mode=debug. Сначала запустите отладку \"Listen for Xdebug\" (F5), порт 9003.",
       "type": "shell",
       "command": "php -d xdebug.mode=debug artisan serve --host=0.0.0.0 --port=8000",
       "options": {
@@ -209,9 +209,9 @@
     },
     {
       "label": "db: статус",
-      "detail": "Проверка соединения с MySQL 8.0 (хост берётся из DB_HOST, иначе db)",
+      "detail": "Проверка соединения с MySQL 8.0 (тот же ping, что и в healthcheck сервиса db)",
       "type": "shell",
-      "command": "php -r 'try { new PDO(\"mysql:host=\" . (getenv(\"DB_HOST\") ?: \"db\"), \"root\", \"root\"); echo \"MySQL доступен\" . PHP_EOL; } catch (Throwable $e) { fwrite(STDERR, \"MySQL недоступен: \" . $e->getMessage() . PHP_EOL); exit(1); }'",
+      "command": "mysqladmin -h db -u root -proot ping",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -223,11 +223,11 @@
     },
     {
       "label": "db: консоль mysql",
-      "detail": "Интерактивный клиент к базе projectfair (root / root)",
+      "detail": "php artisan db — клиент mysql с параметрами из projfair-back/.env",
       "type": "shell",
-      "command": "mysql -h db -P 3306 -u root -proot projectfair",
+      "command": "php artisan db",
       "options": {
-        "cwd": "${workspaceFolder}"
+        "cwd": "${workspaceFolder}/projfair-back"
       },
       "problemMatcher": [],
       "presentation": {
@@ -237,9 +237,9 @@
     },
     {
       "label": "db: переимпорт дампа",
-      "detail": "PROJFAIR_REIMPORT=1 bash .devcontainer/setup.sh — вернёт БД к состоянию projectfair.sql. БД пересоздаётся целиком, ручные изменения пропадут.",
+      "detail": "Пересоздаёт базу projectfair из .devcontainer/projectfair.sql и применяет новые миграции. Ручные изменения пропадут.",
       "type": "shell",
-      "command": "PROJFAIR_REIMPORT=1 bash .devcontainer/setup.sh",
+      "command": "mysql -h db -u root -proot -e 'DROP DATABASE IF EXISTS projectfair; CREATE DATABASE projectfair' && mysql -h db -u root -proot --default-character-set=utf8mb4 projectfair < .devcontainer/projectfair.sql && cd projfair-back && php artisan migrate --force --ansi",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -264,10 +264,10 @@
       }
     },
     {
-      "label": "mailhog: статус",
-      "detail": "SMTP mailhog:1025, веб-интерфейс http://localhost:8025",
+      "label": "mailpit: статус",
+      "detail": "SMTP mailpit:1025, веб-интерфейс http://localhost:8025",
       "type": "shell",
-      "command": "curl -sS -o /dev/null -w 'MailHog UI (http://mailhog:8025): HTTP %{http_code}\\n' http://mailhog:8025/ && echo 'SMTP: mailhog:1025'",
+      "command": "curl -sS -o /dev/null -w 'Mailpit UI (http://mailpit:8025): HTTP %{http_code}\\n' http://mailpit:8025/ && echo 'SMTP: mailpit:1025'",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -279,7 +279,7 @@
     },
     {
       "label": "setup: первичная настройка",
-      "detail": "bash .devcontainer/setup.sh — .env, composer install, APP_KEY, импорт дампа, миграции, npm install. Идемпотентно.",
+      "detail": "bash .devcontainer/setup.sh — .env, composer install + npm install, APP_KEY, миграции. Идемпотентно.",
       "type": "shell",
       "command": "bash .devcontainer/setup.sh",
       "options": {

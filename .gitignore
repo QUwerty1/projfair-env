@@ -1,6 +1,7 @@
 *
 
 !.gitignore
+!.gitattributes
 
 !.devcontainer
 !.vscode
