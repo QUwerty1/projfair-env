@@ -13,12 +13,11 @@ services:
   app:
     build: .
     image: projfair-dev:latest
+    pull_policy: build
     volumes:
       - ..:/workspaces/projfair:cached
-      # Кэши пакетов вне репозитория, чтобы не инвалидировать vendor/node_modules
       - composer-cache:/home/vscode/.composer/cache
       - npm-cache:/home/vscode/.npm
-      # zz- в имени — чтобы подключаться после xdebug.ini базового образа (см. php.ini)
       - ./php.ini:/usr/local/etc/php/conf.d/zz-projfair.ini:ro
     ports:
       - "8000:8000"   # php artisan serve
@@ -28,7 +27,6 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
-    # Держит контейнер запущенным; сервисы стартуют вручную или задачами VS Code
     command: sleep infinity
 
   db:
@@ -41,13 +39,8 @@ services:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
-      # Импортируется один раз, когда том db-data пуст.
-      # Вернуть БД к дампу: задача "db: переимпорт дампа" или
-      # `docker compose -p projfair -f .devcontainer/docker-compose.yml down -v`
       - ./projectfair.sql:/docker-entrypoint-initdb.d/projectfair.sql:ro
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-log-bin
-    # Пока идёт импорт дампа, MySQL слушает только сокет, поэтому ping по TCP
-    # проходит лишь после импорта — app стартует уже с заполненной базой.
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
       interval: 5s
